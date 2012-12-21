@@ -342,7 +342,7 @@ class Trim(Convert):
                 sys.exit('Min length needs to be > 0.')
         
     def Retrieve(self):
-        """ Retrieve the sequence and quality line. Returns a list. """
+        """ Retrieve the sequence and quality line. Returns a list: [Sequence, Quality]. """
         try:
             if len(self.Sequence) == 0:
                 self.Sequence = None
