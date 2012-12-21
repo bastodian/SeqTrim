@@ -299,7 +299,7 @@ class EndTrim(Convert):
                 self.Sequence = RevSeq[Trim:][::-1]
                 self.Quality = RevQual[Trim:][::-1]
         except AssertionError:
-            if Crawl > len(self.Quality)
+            if Crawl > len(self.Quality):
                 sys.exit('Crawl variable passed to function must be <= length of sequence.')
             else:
                 sys.exit('Crawl variable passed to function must be >= 0 and <= length of sequence.')
