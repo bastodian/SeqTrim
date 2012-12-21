@@ -9,7 +9,7 @@ class Convert(object):
         corresponding to integer Phred scores.
     """
     def __init__(self):
-        # Map to associate raw Phred score to ASCII+33
+        # Map to associate raw Phred score to ASCII+33 (Sanger encoding)
         self.Phred33 = {
                 0:'!',
                 1:'"',
@@ -107,7 +107,7 @@ class Convert(object):
                 93:'~'
         }
 
-        # Map to associate raw Phred score to ASCII+64
+        # Map to associate raw ASCII+64 to phred score
         self.Phred64 = {
                 '@':0,
                 'A':1,
@@ -192,7 +192,7 @@ class Convert(object):
         except KeyError:
             sys.exit('Cannot retrieve ASCII character. Valid integers range from 0 to 93!')
 
-class EndTrim(Convert):
+class Trim(Convert):
     """ 
         Methods for trimming fastq sequences and corresponding quality scores from 5 and 3 
         prime ends. To instantiate, provide 3 arguments, Nucleotide sequence and correspondig
@@ -200,7 +200,7 @@ class EndTrim(Convert):
     """
     def __init__(self, Sequence, Quality, QScore):
         """ Instantiation of the class requires 3 arguments:
-        Sequence, Quality line, and minimum Phred score to accept. """
+        Sequence, Quality line, and minimum acceptable Phred score. """
         try:
             assert type(Sequence) == str
             self.Sequence = Sequence
@@ -213,15 +213,14 @@ class EndTrim(Convert):
             sys.exit('Quality line not a string!')
         try:
             assert 0 <= QScore <= 93 and type(QScore) == int
-#            self.Convert = Convert() THIS Works as an alternative to the 2 lines below
+            super(Trim, self).__init__()
+            self.QScore = super(Trim, self).PhredToASCII(QScore)
+#            THIS Works as an alternative to the 2 lines above:
+#            self.Convert = Convert()
 #            self.QScore = self.Convert.PhredToASCII(QScore)
-            super(EndTrim, self).__init__()
-            self.QScore = super(EndTrim, self).PhredToASCII(QScore)
         except AssertionError:
             self.QScore = QScore
             sys.exit('Quality score not an integer or out of range (0->93)!')
-        #DEBUG Next line sys.exit(s the input to the program
-        #sys.exit( self.QScore, '\n', self.Sequence, '\n', self.Quality
 
     def FivePrime(self, Crawl=0):
         """ Trim from the 5 prime end of a sequence. Trims until first nucleotide passing threshold is encountered.
@@ -259,7 +258,10 @@ class EndTrim(Convert):
                 self.Sequence = self.Sequence[Trim:]
                 self.Quality = self.Quality[Trim:]
         except AssertionError:
-            sys.exit('Crawl variable passed to function must be >= 0 and <= length of sequence; default is 0.')
+            if Crawl > len(self.Quality):
+                sys.exit('Crawl variable passed to function must be <= length of sequence.')
+            else:
+                sys.exit('Crawl variable passed to function must be >= 0 and <= length of sequence.')
 
     def ThreePrime(self, Crawl=0):
         """ Trim from the 3 prime end of a sequence. Trims until first nucleotide passing threshold is encountered.
@@ -304,12 +306,12 @@ class EndTrim(Convert):
             else:
                 sys.exit('Crawl variable passed to function must be >= 0 and <= length of sequence.')
     
-    def GlobalTrim(self, NumBases=None):
-        """ Counts the number of nucleotides below QScore threshold. NumBases specifies how
-        many nucleotides below the Phred score threshold are acceptable. Sequence is clipped
-        5-3 prime if too many nuclotides fail quality check. """
+    def GlobalTrim(self, PercentBases=1):
+        """ Counts the number of nucleotides below QScore threshold. PercentBases specifies the
+        acceptable fraction of nucleotides below the Phred score threshold. Sequence is clipped
+        5-3 prime from first unacceptable nucleotide if too many nuclotides fail quality check. """
         try:
-            assert NumBases >= 0 and type(NumBases) == int
+            assert PercentBases >= 0 and type(PercentBases) == int
             Count = 0
             Trim = None
             # Check how many bases fail QScore test
@@ -318,7 +320,7 @@ class EndTrim(Convert):
                     Count += 1
                     if Trim == None:
                         Trim = i
-            if Count >= NumBases:
+            if Count >= (Count/PercentBases*100):
                 self.Sequence = self.Sequence[:Trim]
                 self.Quality = self.Quality[:Trim]
         except AssertionError:
@@ -334,10 +336,13 @@ class EndTrim(Convert):
                 self.Sequence = None
                 self.Quality = None
         except AssertionError:
-            sys.exit('Provide min length of seqence as integer argument.')
+            if type(Length) != int:
+                sys.exit('Provide min length as integer argument.')
+            else:
+                sys.exit('Min length needs to be > 0.')
         
     def Retrieve(self):
-        """ Retrieve the sequence and quality line. """
+        """ Retrieve the sequence and quality line. Returns a list. """
         try:
             if len(self.Sequence) == 0:
                 self.Sequence = None
