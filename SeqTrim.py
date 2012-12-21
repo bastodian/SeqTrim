@@ -174,7 +174,7 @@ class Convert(object):
                 '~':62
         }
 
-    def Convert(self, QualLine):
+    def IlluminaToSanger(self, QualLine):
         """ Converts Illumina >1.3<1.8 phred encoding to Sanger format. """
         NewQualLine = []
         for Value in QualLine:
