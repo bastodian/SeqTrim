@@ -228,7 +228,7 @@ class EndTrim(Convert):
         By setting Crawl to be a positive integer the search can be extended (eg, Crawl=5 will make the search continue
         for 5 nucleotides downstream of the first one that passed phred scores threshold). """
         try:
-            assert Crawl >= 0 #and Crawl <= len(self.Quality)
+            assert Crawl >= 0 and Crawl <= len(self.Quality)
             if Crawl == 0:
                 for i in range(len(self.Quality)):
                     if self.Quality[i] >= self.QScore:
