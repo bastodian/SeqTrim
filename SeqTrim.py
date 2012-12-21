@@ -182,8 +182,7 @@ class Convert(object):
                 Key = self.Phred64[Value]
                 NewQualLine.append(self.Phred33[Key])
             except KeyError:
-                return 'Invalid Format. Are you sure you are trying to convert between the right formats?'
-                sys.exit(1)
+                sys.exit('Invalid Format. Are you sure you are trying to convert between the right formats?')
         return ''.join(NewQualLine)
     
     def PhredToASCII(self, PhredScore):
@@ -191,8 +190,7 @@ class Convert(object):
         try:
             return self.Phred33[PhredScore]
         except KeyError:
-            return 'Cannot retrieve ASCII character. Valid integers range from 0 to 93!'
-            sys.exit(1)
+            sys.exit('Cannot retrieve ASCII character. Valid integers range from 0 to 93!')
 
 class EndTrim(Convert):
     """ 
@@ -207,14 +205,12 @@ class EndTrim(Convert):
             assert type(Sequence) == str
             self.Sequence = Sequence
         except AssertionError:
-            print 'Sequence not a string!'
-            sys.exit(1)
+            sys.exit('Sequence not a string!')
         try:
             assert type(Quality) == str
             self.Quality = Quality
         except AssertionError:
-            print 'Quality line not a string!'
-            sys.exit(1)
+            sys.exit('Quality line not a string!')
         try:
             assert 0 <= QScore <= 93 and type(QScore) == int
 #            self.Convert = Convert() THIS Works as an alternative to the 2 lines below
@@ -223,10 +219,9 @@ class EndTrim(Convert):
             self.QScore = super(EndTrim, self).PhredToASCII(QScore)
         except AssertionError:
             self.QScore = QScore
-            print 'Quality score not an integer or out of range (0->93)!'
-            sys.exit(1)
-        #DEBUG Next line prints the input to the program
-        #print self.QScore, '\n', self.Sequence, '\n', self.Quality
+            sys.exit('Quality score not an integer or out of range (0->93)!')
+        #DEBUG Next line sys.exit(s the input to the program
+        #sys.exit( self.QScore, '\n', self.Sequence, '\n', self.Quality
 
     def FivePrime(self, Crawl=0):
         """ Trim from the 5 prime end of a sequence. Trims until first nucleotide passing threshold is encountered.
@@ -264,15 +259,14 @@ class EndTrim(Convert):
                 self.Sequence = self.Sequence[Trim:]
                 self.Quality = self.Quality[Trim:]
         except AssertionError:
-            print 'Crawl variable passed to function must be >= 0 and <= length of sequence; default is 0.'
-            sys.exit(1)
+            sys.exit('Crawl variable passed to function must be >= 0 and <= length of sequence; default is 0.')
 
     def ThreePrime(self, Crawl=0):
         """ Trim from the 3 prime end of a sequence. Trims until first nucleotide passing threshold is encountered.
         By setting Crawl to be a positive integer the search can be extended (eg, Crawl=5 will make the search continue
         for 5 nucleotides upstream of the first one that passed phred scores threshold). """
         try:
-            assert Crawl >= 0 #and Crawl <= len(self.Quality)
+            assert Crawl >= 0 and Crawl <= len(self.Quality)
             if Crawl == 0:
                 for i in range(len(self.Quality)-1,-1,-1):
                     if self.Quality[i] >= self.QScore:
@@ -305,8 +299,10 @@ class EndTrim(Convert):
                 self.Sequence = RevSeq[Trim:][::-1]
                 self.Quality = RevQual[Trim:][::-1]
         except AssertionError:
-            print 'Crawl variable passed to function must be >= 0 and <= length of sequence; default is 0.'
-            sys.exit(1)
+            if Crawl > len(self.Quality)
+                sys.exit('Crawl variable passed to function must be <= length of sequence.')
+            else:
+                sys.exit('Crawl variable passed to function must be >= 0 and <= length of sequence.')
     
     def GlobalTrim(self, NumBases=None):
         """ Counts the number of nucleotides below QScore threshold. NumBases specifies how
@@ -326,8 +322,7 @@ class EndTrim(Convert):
                 self.Sequence = self.Sequence[:Trim]
                 self.Quality = self.Quality[:Trim]
         except AssertionError:
-            print 'Provide number of acceptable nucleotides below Phred threshold as integer argument.'
-            sys.exit(1)
+            sys.exit('Provide number of acceptable nucleotides below Phred threshold as integer argument.')
 
     def MinLength(self, Length=None):
         """ Sets Sequence and Quality line to None if they are below threshold length. This may break
@@ -339,8 +334,7 @@ class EndTrim(Convert):
                 self.Sequence = None
                 self.Quality = None
         except AssertionError:
-            print 'Provide min length of seqence as integer argument.'
-            sys.exit(1)
+            sys.exit('Provide min length of seqence as integer argument.')
         
     def Retrieve(self):
         """ Retrieve the sequence and quality line. """
